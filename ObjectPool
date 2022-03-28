@@ -1,0 +1,65 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ObjectPool : MonoBehaviour
+{
+    public List<GameobjectInt> prefabAmountLists = new List<GameobjectInt>();
+    public static ObjectPool SharedInstance;
+    public List<GameObject> pooledObjects;
+
+    private void Awake()
+    {
+        SharedInstance = this;
+    }
+
+    private void Start()
+    {
+        GameObject parent = new GameObject("Object Pool");
+        foreach (var item in prefabAmountLists)
+        {
+            GameObject tmp;
+            for (int i = 0; i < item.number; i++)
+            {
+                tmp = Instantiate(item.gameObject, parent.transform);
+                tmp.SetActive(false);
+                item.gameObjects.Add(tmp);
+                pooledObjects.Add(tmp);
+            }
+        }
+    }
+
+    public GameObject GetPooledObject(int index)
+    {
+        // Пример вызова объекта из пула:  var roadVFX = ObjectPool.SharedInstance.GetPooledObject(0); roadVFX.SetActive(true);
+        for (int i = 0; i < prefabAmountLists[index].gameObjects.Count; i++)
+        {
+            if (!prefabAmountLists[index].gameObjects[i].activeInHierarchy)
+            {
+                return prefabAmountLists[index].gameObjects[i].gameObject;
+            }
+        }
+        return null;
+    }
+
+    public void ClearPooledObjects()
+    {
+        foreach (var pooledObject in prefabAmountLists)
+        {
+            foreach (var go in pooledObject.gameObjects)
+            {
+                go.SetActive(false);
+            }
+        }
+        Debug.Log("Pooled Objects cleared");
+    }
+}
+
+[System.Serializable]
+public class GameobjectInt
+{
+    public GameObject gameObject;
+    public int number;
+    public List<GameObject> gameObjects;
+}
+
